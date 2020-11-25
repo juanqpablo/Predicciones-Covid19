@@ -80,3 +80,50 @@ class Datos_Region:
         for row in data_top.index:
             fechas_array.append(row)
         return (fechas_array[2:self.largo])
+
+    def all_region(self):
+        regiones = [
+                    "Arica y Parinacota",
+                    "Tarapacá",
+                    "Antofagasta",
+                    "Atacama",
+                    "Coquimbo",
+                    "Valparaíso",
+                    "Metropolitana",
+                    "Ohiggins",
+                    "Ñuble",
+                    "Maule",
+                    "Bio Bío",
+                    "Araucanía", #
+                    "Los Ríos",
+                    "Los Lagos",
+                    "Aysén",
+                    "Magallanes"
+                    ]
+        return regiones
+    def generate_dataframe(self, name_region, activos = False):
+        #-------------------------------------------------------------------------------
+        #Se obtienen los datos necesarios
+        #-------------------------------------------------------------------------------
+        confirmados = self.confirmados_region(name_region)
+        muertos = self.muertos_region(name_region)
+        recuperados = self.recuperados_region(name_region)
+        fechas = self.get_fechas()
+
+        #-------------------------------------------------------------------------------
+        # Armando Data Frame
+        #-------------------------------------------------------------------------------
+        region = {
+            "Fecha": fechas,
+            "Casos_Confirmados": confirmados,
+            "Casos_Fallecidos" : muertos,
+            "Casos_Recuperados": recuperados,
+        }
+        df = pd.DataFrame(region, columns = ["Fecha", "Casos_Confirmados", "Casos_Fallecidos","Casos_Recuperados"] )
+        df = df.fillna(0) #Se camian todos los valores NaN por 0
+        df['Casos_Confirmados'][df["Casos_Confirmados"] == 0] = 0
+        df["Fecha"] = pd.to_datetime(df['Fecha'], infer_datetime_format=True)
+        if activos == True:
+            df["Casos_Activos"] = df.Casos_Confirmados - df.Casos_Fallecidos - df.Casos_Recuperados
+        df = df.assign(Dias=[i for i in range(len(fechas))]) # Se genera el campo Dias
+        return df
